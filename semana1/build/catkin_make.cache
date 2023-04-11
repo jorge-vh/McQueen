@@ -1,0 +1,2 @@
+puzzlebot_control:puzzlebot_gazebo:puzzlebot_world
+-DCATKIN_DEVEL_PREFIX=/home/javh/Documents/McQueen/semana1/devel -DCMAKE_INSTALL_PREFIX=/home/javh/Documents/McQueen/semana1/install -G Unix Makefiles
