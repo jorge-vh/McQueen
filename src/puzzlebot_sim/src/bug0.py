@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 import math
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist,Point
 from sensor_msgs.msg import LaserScan
 from tf2_geometry_msgs import PoseStamped
 
