@@ -4,9 +4,15 @@ from sensor_msgs.msg import LaserScan
 
 def callback(scan):
     # Procesa los datos del lidar
-    front = scan.ranges[len(scan.ranges)//2]
-    left = min(scan.ranges[:len(scan.ranges)//4])
-    right = min(scan.ranges[-len(scan.ranges)//4:])
+    #front = scan.ranges[len(scan.ranges)//2]
+    #left = min(scan.ranges[:len(scan.ranges)//4])
+    #right = min(scan.ranges[-len(scan.ranges)//4:])
+
+    right =  min(min(scan.ranges[0:143]), 10)
+    frontright = min(min(scan.ranges[144:287]), 10)
+    front =  min(min(scan.ranges[288:431]), 10)
+    frontleft =  min(min(scan.ranges[432:575]), 10)
+    left =   min(min(scan.ranges[576:719]), 10)
 
     # Determina la posición de los obstáculos
     if front < 1.0:

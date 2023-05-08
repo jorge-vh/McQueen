@@ -18,9 +18,9 @@ class puzzlebot_cinematic_model:
       self.y = 0
       self.angle = 0
       #Iniciamos datos necesarios como el radio de las llantas y la frecuencia
-      self.r = 0.05 #radio
+      self.r = 0.2 #radio
       self.freq = 150
-      self.l = .19
+      self.l = 10
       #Iniciamos los suscriptores y publicadores
       rospy.Subscriber('/cmd_vel',Twist,self.setVel)
       self.pose_pub = rospy.Publisher('/pose_sim', PoseStamped, queue_size=10)

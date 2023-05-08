@@ -19,7 +19,7 @@ class kinematic_model:
         self.wr = rospy.Publisher('/wr', Float32, queue_size=10)
         self.odom = rospy.Publisher('/odom', Odometry, queue_size=10)
         self.radius = .05
-        self.wheel_distance = .08
+        self.wheel_distance = .19
         self.frequency = 100
         rospy.Subscriber('/cmd_vel', Twist, self.update_values)
         rospy.Subscriber('/restart', Empty, self.restart)

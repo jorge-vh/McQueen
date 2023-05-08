@@ -23,8 +23,8 @@ class control:
         self.loc.theta=0
         self.dt=0
         #Variables para movimiento en X y Y
-        self.goalY=0
-        self.goalX=4
+        self.goalY=1
+        self.goalX=1
         self.etheta=0
         self.ed=0
         #Variables para movimiento del puzzlebot
