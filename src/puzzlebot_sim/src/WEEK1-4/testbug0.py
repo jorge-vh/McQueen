@@ -80,7 +80,7 @@ class Bug0Control(object):
         #is this the right one? Seems to be the one
         quats = data.pose.orientation
         eulers = euler_from_quaternion([quats.x, quats.y, quats.z, quats.w]) 
-        self.robot_yaw = eulers[1]
+        self.robot_yaw = eulers[2]
         #print(self.robot_yaw)
 
 
@@ -105,7 +105,7 @@ class Bug0Control(object):
             self.distance_to_goal = math.sqrt((self.goal_x - self.robot_x)**2 + (self.goal_y - self.robot_y)**2)
             print(self.distance_to_goal)
             # Si el robot está suficientemente cerca de la meta, detenerse
-            if self.distance_to_goal < 0.3:
+            if self.distance_to_goal < 0.2:
                 self.goal_reached = True
                 self.linear_speed = 0.0
                 self.angular_speed = 0.0
@@ -157,8 +157,8 @@ class Bug0Control(object):
 
 if __name__ == '__main__':
 # Coordenadas de la meta
-    goal_x = 1.0
-    goal_y = -1.0
+    goal_x = 2.0
+    goal_y = 0.0
     # Crear un objeto Bug0Control
     bug0 = Bug0Control(goal_x, goal_y)
 
