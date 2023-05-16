@@ -48,7 +48,10 @@ class Bug0Control(object):
 
         start_angle2 = total_angles-total_angles/10
         end_angle2 = total_angles
-
+        print("Measurements")
+        print(scan.angle_min)
+        print(scan.angle_max)
+        print(scan.angle_increment)
         print(len(lidar_data))
         # Calcular los índices correspondientes a los ángulos en el rango deseado
         
