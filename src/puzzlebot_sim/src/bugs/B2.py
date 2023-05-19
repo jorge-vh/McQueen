@@ -3,7 +3,7 @@
 #Last modify: Fernando Cuellar, comments
 import math
 import rospy
-import  nav_functions
+import nav_functions
 import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
