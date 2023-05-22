@@ -75,7 +75,7 @@ class Bug0():
         self.current_angle = nav_functions.calculate_yaw_angle_deg( data.pose.pose.orientation )
 
         # ______________ function to  turn left in case of state_____________________
-    def turn_left(self, p2p_target_angle, angle_to_rotate = np.pi/2.0):
+    def turn_left(self, p2p_target_angle, angle_to_rotate = np.pi/3.0):
         #turn left until angle to rotate has been complete 
         if self.last_turn_time == None and self.state == "turn_left":
             self.last_turn_time = rospy.get_time()
@@ -233,11 +233,14 @@ class Bug0():
                     self.turn_left(target_angle) 
                 elif self.state == "arrived":
                     print("You have arrived to the destination")
-                    exit             
+                    return        
                 self.vel_pub.publish(self.vel_msg)
-                
             self.rate.sleep()          
 
 if __name__ == "__main__":
-    bug_0 = Bug0(-2.5,3.0,0.5) # target coordinates  
+    bug_0 = Bug0(5.0,-0.6,0.5) # target coordinates  
+    bug_0.main()
+    bug_0 = Bug0(0.0,0.0,0.5) # target coordinates  
+    bug_0.main()
+    bug_0 = Bug0(7.0,2.0,0.5) # target coordinates  
     bug_0.main()

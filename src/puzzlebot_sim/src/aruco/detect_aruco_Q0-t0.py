@@ -58,7 +58,7 @@ class ArucoDetector():
         self.current_position_xy_2d = ( data.pose.pose.position.x , data.pose.pose.position.y )                             
         _, _, yaw = euler_from_quaternion([data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w])
         self.current_angle = yaw*(180.0/math.pi)
-        print("current angle {c}".format(c = self.current_angle))
+        #print("current angle {c}".format(c = self.current_angle))
 
     def draw_arucos(self, image, corners):
         # verify *at least* one ArUco marker was detected
@@ -233,7 +233,8 @@ class ArucoDetector():
 
     def main(self):
 
-        print(self.image != None, self.scan != None, self.current_angle != None)
+        #
+        #print(self.image != None, self.scan != None, self.current_angle != None)
         
         if self.image != None and self.scan != None and self.current_angle != None:  
             print("entre")
@@ -253,12 +254,13 @@ class ArucoDetector():
                     aruco_angle = self.get_aruco_angle(pixel_midpoint)
                     aruco_angle = aruco_angle*(180.0/math.pi)
                     #aruco_angle = angle_to_only_possitive(aruco_angle)
-                    print("aplha value is: {v}".format(v = aruco_angle))
+                    #print("aplha value is: {v}".format(v = aruco_angle))
 
                     beta = self.calculate_beta (aruco_angle) 
                     x_calc, y_calc = self.min_possible(aruco_id[0], beta, aruco_angle)
-                    print("beta values is {v}".format(v = beta))
-                    print("x: ", x_calc, "y: ", y_calc)
+                    #print("beta values is {v}".format(v = beta))
+                    #print("x: ", x_calc, "y: ", y_calc)
+                    print(aruco_id)
                 
             
 
