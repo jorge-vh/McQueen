@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <gazebo reference="chassis">
-    <material>Gazebo/Yellow</material>
+    <material>Gazebo/Orange</material>
     <mu1>0.01</mu1>
     <mu2>0.01</mu2>
   </gazebo>
@@ -14,7 +14,7 @@
     <kd>10.0</kd>
     <minDepth>0.001</minDepth>
     <maxVel>0.1</maxVel>
-    <material>Gazebo/Black</material>
+    <material>Gazebo/Gray</material>
   </gazebo>
 
   <gazebo reference="right_wheel">
@@ -24,7 +24,7 @@
     <kd>10.0</kd>
     <minDepth>0.001</minDepth>
     <maxVel>0.1</maxVel>
-    <material>Gazebo/Black</material>
+    <material>Gazebo/Gray</material>
   </gazebo>
 
   <gazebo>
@@ -32,9 +32,19 @@
     </plugin>
   </gazebo>
 
+  <!-- GRIPPER -->
+
+  <gazebo reference="gripper">
+    <mu1>0.01</mu1>
+    <mu2>0.01</mu2>
+    <material>Gazebo/White</material>
+  </gazebo>
+
+<!-- GRIPPER -->
+
   <!-- Standard Rapberry camera -->
   <gazebo reference="camera">
-    <material>Gazebo/Blue</material>
+    <material>Gazebo/White</material>
     <sensor type="camera" name="camera">
       <update_rate>30.0</update_rate>
       <camera name="head">
@@ -67,7 +77,7 @@
   </gazebo>
 
   <gazebo reference="lidar">
-    <material>Gazebo/Red</material>
+    <material>Gazebo/Gray</material>
     <sensor type="ray" name="rplidar">
       <pose>0 0 0 0 0 0</pose>
       <visualize>false</visualize>

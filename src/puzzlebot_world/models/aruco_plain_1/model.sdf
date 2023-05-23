@@ -1,0 +1,74 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+  <model name='aruco_plain_1'> <!-- CHANGE THIS FOR NEW ARUCO -->
+    <link name='robot_link'>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <gravity>1</gravity>
+      <inertial>
+        <mass>1</mass>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1</iyy>
+          <iyz>0</iyz>
+          <izz>1</izz>
+        </inertia>
+      </inertial>
+      <visual name='front_visual'>
+        <pose frame=''>0 0 0.0025 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.14 0.14 0.005</size>
+          </box>
+        </geometry>
+        <material>
+          <lighting>1</lighting>
+          <script>
+            <uri>model://aruco_plain_1/materials/scripts</uri> <!-- CHANGE THIS FOR NEW ARUCO -->
+            <uri>model://aruco_plain_1/materials/textures</uri> <!-- CHANGE THIS FOR NEW ARUCO -->
+            <name>Aruco/Id1</name> <!-- CHANGE THIS FOR NEW ARUCO -->
+          </script>
+          <shader type='vertex'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <ambient>0 0 0 1</ambient>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 0</specular>
+          <emissive>1 1 1 1</emissive>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <visual name='rear_visual'>
+        <pose frame=''>0 0 -0.0025 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.14 0.14 0.005</size>
+          </box>
+        </geometry>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+        <material>
+          <shader type='vertex'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::robot_link::rear_visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <ambient>0 0 0 1</ambient>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <static>1</static>
+    <allow_auto_disable>1</allow_auto_disable>
+  </model>
+</sdf>

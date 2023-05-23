@@ -214,6 +214,46 @@
 		</inertial>]]>
     </link>
 
+
+
+
+	<!-- GRIPPER -->
+	 <link name="gripper">
+		    <inertial>
+		    	    <origin rpy="0 0 0" xyz="0 0 0"/>
+		          <mass value="0.007"/>
+		          <inertia ixx="0.166667" ixy="0" ixz="0" iyy="0.166667" iyz="0" izz="0.166667"/>
+		          <!-- ad camera inertia -->
+		    </inertial>
+
+			<collision name="collision_chassis">
+		    	    <origin rpy="0 0 0" xyz="0 0 0"/>
+		          <geometry>
+		               <box size="0.05 0.01 0.06" />
+		          </geometry> 
+		    </collision>
+
+
+
+		    <visual>
+		    	    <!-- box only 
+		    	    <origin rpy="$0 0 ${PI/2}" xyz="0 0 0"/>
+		          <geometry>
+		          	<box size="0.05 0.01 0.06" />
+		          </geometry>-->
+ 
+		         <!-- with mesh--> 
+		          <origin rpy="${PI/1.8} 0.07 ${-PI/2.25}" xyz="0.06 0.03 -0.06"/>
+		          <geometry>
+		          	<mesh filename="file://${mesh_gripper}" scale="0.0009 0.0009 0.0009" />
+		          </geometry>
+				  
+		    </visual>
+			
+
+  </link> 
+
+
 	<!-- JOINTS  -->
 
 	<joint name="base_to_right_w" type="continuous">
@@ -253,6 +293,14 @@
         <child link="lidar"/>
         <origin xyz="0.05 0 0.115" rpy="0 0 ${PI}"/>
     </joint>
+
+<joint name="gripper_to_base" type="fixed">
+	  <parent link="chassis" />
+	  <child link="gripper" />
+	  <origin xyz="0.149 0.031 .038" rpy= "0.0 0.24 0.0" />	
+  </joint>
+  
+
 
 	<!-- TRANSMISSIONS (For a more complex model and it represents actuator attributes) -->
 	<transmission name="right_wheel_trans">

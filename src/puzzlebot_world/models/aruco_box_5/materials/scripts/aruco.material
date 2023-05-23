@@ -1,0 +1,13 @@
+material Aruco/Id5
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture aruco5.png
+			}
+		}
+	}
+}

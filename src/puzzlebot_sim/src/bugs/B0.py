@@ -240,7 +240,11 @@ class Bug0():
 if __name__ == "__main__":
     bug_0 = Bug0(5.0,-0.6,0.5) # target coordinates  
     bug_0.main()
+    bug_0 = Bug0(8.0,2.0,0.5) # target coordinates  
+    bug_0.main()
+    bug_0 = Bug0(3.0,2.0,0.5) # target coordinates  
+    bug_0.main()
     bug_0 = Bug0(0.0,0.0,0.5) # target coordinates  
     bug_0.main()
-    bug_0 = Bug0(7.0,2.0,0.5) # target coordinates  
-    bug_0.main()
+    
+    

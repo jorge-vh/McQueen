@@ -41,7 +41,7 @@ class ArucoDetector():
         self.ocv_image = None
 
         self.scan = None
-
+        self.current_position = (0,0)
         self.current_position_xy_2d = None
         self.current_angle = None
 
@@ -59,6 +59,7 @@ class ArucoDetector():
         _, _, yaw = euler_from_quaternion([data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w])
         self.current_angle = yaw*(180.0/math.pi)
         #print("current angle {c}".format(c = self.current_angle))
+        #self.current_position_xy_2d
 
     def draw_arucos(self, image, corners):
         # verify *at least* one ArUco marker was detected
@@ -174,23 +175,10 @@ class ArucoDetector():
     def euclidean_distance(self, tuple):
         return math.sqrt(tuple[0]**2 + tuple[1]**2 + tuple[2]**2)
 
-    def calculate_beta(self, aruco_midpoint_angle):
-        """angle_apperture = 0.15708 # 10 degrees at radius
-        #aruco_midpoint_scan_index = self.get_laser_index_from_angle(self.aruco_midpoint_angle)
-        #second_scan_index = self.get_laser_index_from_angle(self.aruco_midpoint_angle + angle_apperture)
-        aruco_midpoint_scan_index = self.get_laser_index_from_angle(0.706858)
-        second_scan_index = self.get_laser_index_from_angle(0.706858 + angle_apperture)
-        a = aruco_midpoint_scan_index
-        b = second_scan_index
-        a = self.scan.ranges[a]
-        b = self.scan.ranges[b]
-        print ("a: ",a, "b: ",b)
-        beta_complement = np.arcsin((b * np.sin(angle_apperture)) / (np.sqrt(a**2 + b**2 - 2*a*b*np.cos(angle_apperture))))
-        beta = 90 - beta_complement"""
-        
+    def calculate_beta(self, aruco_midpoint_angle):       
         beta = aruco_midpoint_angle + self.current_angle
         return beta
-
+    
     def id2coordinate(self, id):
         aruco_coordinate = self.arucoCoordinates[str(id)]
         return aruco_coordinate
@@ -253,14 +241,19 @@ class ArucoDetector():
                     pixel_midpoint = self.get_aruco_midpoint(aruco_corners)
                     aruco_angle = self.get_aruco_angle(pixel_midpoint)
                     aruco_angle = aruco_angle*(180.0/math.pi)
-                    #aruco_angle = angle_to_only_possitive(aruco_angle)
+                    aruco_angle = angle_to_only_possitive(aruco_angle)
                     #print("aplha value is: {v}".format(v = aruco_angle))
 
                     beta = self.calculate_beta (aruco_angle) 
                     x_calc, y_calc = self.min_possible(aruco_id[0], beta, aruco_angle)
                     #print("beta values is {v}".format(v = beta))
                     #print("x: ", x_calc, "y: ", y_calc)
-                    print(aruco_id)
+                    #print(aruco_id)
+                    
+                    #print(self.current_position_xy_2d[0]) works
+                    position_difference = (x_calc - self.current_position_xy_2d[0], y_calc- self.current_position_xy_2d[1])
+                    self.current_position = (self.current_position[0] + position_difference[0], self.current_position[1] + position_difference[1])
+                    print(self.current_position)
                 
             
 
