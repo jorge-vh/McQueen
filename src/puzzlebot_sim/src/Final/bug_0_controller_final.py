@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 
-"""Made by:
-    Leonardo Javier Nava
-        navaleonardo40@gmail.com
-    Jose Angel del Angel Dominguez
-        joseangeldelangel10@gmail.com
-    Raul López Musito
-        raulmusito@gmail.com
-Code description:
-TO-DO - Implement Bug 0 algorithm
-Notes:
-"""
-
 import math
 import rospy
 import nav_functions
@@ -42,19 +30,19 @@ class Bug0():
         self.current_angle = None
         self.displaced_angle = 0.0
                      
-        self.angular_error_treshold = 0.5    
+        self.angular_error_treshold = 0.3    
         self.distance_error_treshold = 0.08                    
 
-        self.go2point_angular_kp = 0.008
-        self.go2point_linear_kp = 0.15
+        self.go2point_angular_kp = 0.005
+        self.go2point_linear_kp = 0.1
 
         self.wall_kp_follow = 40.0 # TODO change this to new follow wall controller
         self.wall_kp_avoid = 0.3 # TODO change this to new follow wall controller
         #self.wall_kd_avoid = -0.08
         #self.previous_wall_avoid_error = None
 
-        self.v_max = 0.4
-        self.v_max_wall = 0.4 # TODO change this to new follow wall controller
+        self.v_max = 0.08
+        self.v_max_wall = 0.2 # TODO change this to new follow wall controller
         self.w_max = 0.5
 
         self.puzzlebot_passing_diameter = 0.60 # meters
@@ -111,9 +99,14 @@ class Bug0():
         elif self.obstacle_in_front():
                 self.state = "turn_left"
         elif abs(angle_error) > self.angular_error_treshold:                                    
-            self.vel_msg.angular.z = nav_functions.saturate_signal(self.go2point_angular_kp*angle_error, self.w_max) 
+            self.vel_msg.angular.z = nav_functions.saturate_signal(self.go2point_angular_kp*angle_error, self.w_max)
+            #f self.vel_msg.linear.x == 0 and self.vel_msg.angular.z < 0.02 and self.vel_msg.angular.z > 0:
+            #    self.vel_msg.angular.z = 0.02 
+            #if self.vel_msg.linear.x == 0 and self.vel_msg.angular.z > -0.02 and self.vel_msg.angular.z < 0:
+            #    self.vel_msg.angular.z = -0.02  
         elif distance_error > self.distance_error_treshold:              
-            self.vel_msg.linear.x = nav_functions.saturate_signal(self.go2point_linear_kp*distance_error, self.v_max)    
+            self.vel_msg.linear.x = nav_functions.saturate_signal(self.go2point_linear_kp*distance_error, self.v_max)
+            self.vel_msg.linear.x = max(self.vel_msg.linear.x,0) #make sure its always smth    we dont want to be nan
     
     def get_laser_index_from_angle(self, angle_in_deg):        
         angle_index = round( (angle_in_deg*len(self.scan.ranges))/360.0 )
@@ -237,7 +230,7 @@ class Bug0():
             elif self.state == "arrived":
                 print("State: Arrived to destination")
             #print(self.state)         
-            self.vel_msg.linear.x = 0.0
+            #self.vel_msg.linear.x = 0.0
             self.vel_msg.angular.z = 0.0
             if self.current_angle != None and self.scan != None:
                 target_vector_minus_robot_vector = ( self.target_postition_xy_2d[0] - self.current_position_xy_2d[0],
@@ -263,4 +256,23 @@ if __name__ == "__main__":
     bug_0.main()
     bug_0 = Bug0(3,0.0,0.5)
     bug_0.main()
+    bug_0 = Bug0(5.0,0.0,0.5)
+    bug_0.main()
+    bug_0 = Bug0(2.0,-4.0,0.5)
+    bug_0.main()
+    bug_0 = Bug0(0.0,0.0,0.5)
+    bug_0.main()
+    bug_0.vel_msg.angular.z = 0
+    bug_0.vel_msg.linear.x = 0
+    bug_0.vel_pub.publish(bug_0.vel_msg)
     
+    
+#___________Escenario llendo a arucos
+#    bug_0 = Bug0(1,6.0,0.5)
+#    bug_0.main()
+#   bug_0 = Bug0(3,0.0,0.5)
+#   bug_0.main()
+#   bug_0 = Bug0(3.0,-8.0,0.5)
+#   bug_0.main()
+#   bug_0 = Bug0(0.0,0.0,0.5)
+#   bug_0.main()

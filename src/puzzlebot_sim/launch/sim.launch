@@ -53,7 +53,7 @@
 
   <include file="$(find puzzlebot_control)/launch/puzzlebot_control.launch"/>
 
-  <node name="odometry" pkg="mini_challenge_2" type="wheelBasedDeadReckoning.py"/>
+  <node name="odometry" pkg="puzzlebot_sim" type="wheelBasedDeadReckoning.py"/>
 
   <node name="detect_aruco" pkg="puzzlebot_sim" type="detect_aruco_mcr_approach.py" output="screen"/>  
   

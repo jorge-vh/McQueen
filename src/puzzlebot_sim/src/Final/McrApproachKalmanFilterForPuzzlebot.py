@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 
-"""Made by:
-    Leonardo Javier Nava
-        navaleonardo40@gmail.com
-    Jose Angel del Angel Dominguez
-        joseangeldelangel10@gmail.com
-
-Code description:
-    Ros node that implements the Kalman filter for manchester robotics puzlebot 
-    considering the odometry info as a priori information and computer vision as
-    posteriori info.
-Notes:
-"""
 
 import math
 import rospy
