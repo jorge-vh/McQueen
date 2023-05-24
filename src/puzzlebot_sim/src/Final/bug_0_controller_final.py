@@ -32,7 +32,7 @@ class Bug0():
         self.vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)        
         self.vel_msg = Twist()
 
-        self.targets = [(5.0, 5.0), (10.0, 0.0), (5.0, -5.0), (0.0, 0.0)] # TODO pass this as an arg
+        #self.targets = [(5.0, 5.0), (10.0, 0.0), (5.0, -5.0), (0.0, 0.0)] # TODO pass this as an arg
         self.target_postition_xy_2d = (targetx, targety)
         self.wall_distance = wall_distance
         print("Target is :", self.target_postition_xy_2d)
@@ -42,11 +42,11 @@ class Bug0():
         self.current_angle = None
         self.displaced_angle = 0.0
                      
-        self.angular_error_treshold = 0.3    
+        self.angular_error_treshold = 0.5    
         self.distance_error_treshold = 0.08                    
 
         self.go2point_angular_kp = 0.008
-        self.go2point_linear_kp = 0.3
+        self.go2point_linear_kp = 0.15
 
         self.wall_kp_follow = 40.0 # TODO change this to new follow wall controller
         self.wall_kp_avoid = 0.3 # TODO change this to new follow wall controller
@@ -55,7 +55,7 @@ class Bug0():
 
         self.v_max = 0.4
         self.v_max_wall = 0.4 # TODO change this to new follow wall controller
-        self.w_max = 0.6
+        self.w_max = 0.5
 
         self.puzzlebot_passing_diameter = 0.60 # meters
 
