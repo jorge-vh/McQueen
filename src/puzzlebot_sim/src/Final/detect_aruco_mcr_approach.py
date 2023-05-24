@@ -12,38 +12,51 @@ from nav_functions import *
 import nav_functions
 
 class ArucoDetector():
-    def __init__(self, aruco_dict = cv2.aruco.DICT_4X4_50):
+    """
+    Clase para detectar y procesar marcadores ArUco en imágenes de la cámara.
+    """
+    def __init__(self, aruco_dict=cv2.aruco.DICT_4X4_50):
+        """
+        Inicializa la clase ArucoDetector.
 
+        Args:
+            aruco_dict (int): Diccionario de marcadores ArUco predefinidos.
+        """
         rospy.init_node("aruco_detector")
 
-        # ________ aruco atributes initialization ______
+        # Atributos de ArUco
         self.arucoDict = cv2.aruco.getPredefinedDictionary(aruco_dict)
         self.arucoParams = cv2.aruco.DetectorParameters()
         self.arucoDetector = cv2.aruco.ArucoDetector(self.arucoDict, self.arucoParams)
-        aruco_cordinates_for_challenge_world = {"0": (2.5,0.0),"1": (2.5,5.5),"2": (7.5,5.5),"3": (7.5,0.0),"4": (7.5,-5.5),"5": (2.5,-5.5)} 
-        #self.arucoCoordinates = {"0": (1.0,0.0),"1": (2.0,-2.0),"2": (-2.0,-2.0),"3": (-2.0,2.0),"4": (4.0,4.0),"5": (4.0,-4.0),"6": (-4.0,-4.0),"7": (-4.0,4.0)}
+        aruco_cordinates_for_challenge_world = {
+            "0": (2.5, 0.0),
+            "1": (2.5, 5.5),
+            "2": (7.5, 5.5),
+            "3": (7.5, 0.0),
+            "4": (7.5, -5.5),
+            "5": (2.5, -5.5)
+        }
         self.arucoCoordinates = aruco_cordinates_for_challenge_world
-        #self.arucoBoxDim = 0.24
 
-        # ________ ros atributes initialization ______        
-        self.image_pub = rospy.Publisher("/image_detecting", Image, queue_size = 1)
-        self.estimated_sensor_reading_pub = rospy.Publisher("/estimated_sensor_reading", Float64MultiArray, queue_size = 1) 
-        self.real_sensor_reading_pub = rospy.Publisher("/real_sensor_reading", Float64MultiArray, queue_size = 1)
+        # Atributos de ROS        
+        self.image_pub = rospy.Publisher("/image_detecting", Image, queue_size=1)
+        self.estimated_sensor_reading_pub = rospy.Publisher("/estimated_sensor_reading", Float64MultiArray, queue_size=1) 
+        self.real_sensor_reading_pub = rospy.Publisher("/real_sensor_reading", Float64MultiArray, queue_size=1)
         self.estimated_visual_sensor_reading_msg = Float64MultiArray() 
         self.real_visual_sensor_reading_msg = Float64MultiArray()
-        self.relation_matrix_between_sensor_and_state_pub = rospy.Publisher("/relation_matrix_between_sensor_and_state", Float64MultiArray, queue_size = 1)        
+        self.relation_matrix_between_sensor_and_state_pub = rospy.Publisher("/relation_matrix_between_sensor_and_state", Float64MultiArray, queue_size=1)        
         self.relation_matrix_between_sensor_and_state_msg = Float64MultiArray()
         self.odom_sub = rospy.Subscriber('/kalman_corrected_odom', Odometry, self.odom_callback)
-        self.scan_sub = rospy.Subscriber('/scan', LaserScan,self.scan_callback)
+        self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
         self.image_sub = rospy.Subscriber("/camera/image_raw", Image, self.image_callback)
 
-        #__________ image ______________        
+        # Atributos de imagen      
         self.curr_signs_image_msg = Image()        
 
-        #___________ color ______________
+        # Atributos de color
         self.green = (0, 255, 0)
 
-        #___________ video initialization _______________
+        # Atributos de video
         self.displayed_image_ocv = np.zeros(5, dtype=np.uint8)
         self.image = None
         self.ocv_image = None
@@ -53,31 +66,69 @@ class ArucoDetector():
         self.current_position_xy_2d = None
         self.current_angle = None        
 
-        self.rate = rospy.Rate(5.0)        
+        self.rate = rospy.Rate(5.0)
 
     def image_callback(self, msg):
+        """
+        Callback para recibir imágenes de la cámara.
+
+        Args:
+            msg: Mensaje de imagen de la cámara.
+        """
         self.image = msg
 
     def scan_callback(self, msg):
+        """
+        Callback para recibir datos de escaneo láser.
+
+        Args:
+            msg: Mensaje de escaneo láser.
+        """
         self.scan = msg
 
     def odom_callback(self, data):     
+        """
+        Callback para recibir datos de odometría.
+
+        Args:
+            data: Datos de odometría.
+        """
         self.bypass_odom = data   
-        self.current_position_xy_2d = ( data.pose.pose.position.x , data.pose.pose.position.y )                             
+        self.current_position_xy_2d = (data.pose.pose.position.x, data.pose.pose.position.y)                             
         _, _, yaw = euler_from_quaternion([data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w])
         self.current_angle = yaw
-        #print("current angle {c}".format(c = self.current_angle))
-        
+
     def midpoint_equation(self, p1, p2):
-        return ( (p1[0]+p2[0])/2, (p1[1]+p2[1])/2 )
-    
+        """
+        Calcula el punto medio entre dos puntos.
+
+        Args:
+            p1 (tuple): Coordenadas del primer punto.
+            p2 (tuple): Coordenadas del segundo punto.
+
+        Returns:
+            tuple: Coordenadas del punto medio.
+        """
+        return ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
+
     def get_aruco_midpoint(self, rectangle_corners):
-        """ function that returns the x,y cordinates of the aruco's midpoint """                
-        rectangle_corners_for_x_y = rectangle_corners.reshape((4,2))        
-        x_center_px, y_center_px = self.midpoint_equation(rectangle_corners_for_x_y[0,:], rectangle_corners_for_x_y[2,:])        
+        """
+        Obtiene las coordenadas del punto medio del marcador ArUco.
+
+        Args:
+            rectangle_corners (numpy.array): Esquinas del marcador ArUco.
+
+        Returns:
+            tuple: Coordenadas del punto medio del marcador ArUco.
+        """
+        rectangle_corners_for_x_y = rectangle_corners.reshape((4, 2))        
+        x_center_px, y_center_px = self.midpoint_equation(rectangle_corners_for_x_y[0, :], rectangle_corners_for_x_y[2, :])        
         return (x_center_px, y_center_px)
 
     def fill_sensor_data_multi_array_layout(self):
+        """
+        Rellena el diseño de matriz multidimensional para los datos del sensor.
+        """
         layout = MultiArrayLayout()
         dimension_0 = MultiArrayDimension()
         dimension_0.label = "len"
@@ -90,12 +141,15 @@ class ArucoDetector():
         self.real_visual_sensor_reading_msg.layout = layout
 
     def fill_relation_matrix_between_sensor_and_state_multi_array_layout(self):
+        """
+        Rellena el diseño de matriz multidimensional para la matriz de relación entre el sensor y el estado.
+        """
         layout = MultiArrayLayout()
         
         dimension_0 = MultiArrayDimension()
         dimension_0.label = "height"
         dimension_0.size = 2
-        dimension_0.stride = 2*3
+        dimension_0.stride = 2 * 3
 
         dimension_1 = MultiArrayDimension()
         dimension_1.label = "width"

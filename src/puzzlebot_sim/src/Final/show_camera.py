@@ -1,17 +1,29 @@
 #!/usr/bin/env python3
+"""
+@file
+@brief This script provides the implementation of an ArUco detector node in ROS.
+"""
 
 import rospy
 import cv2
 
-
 class ArucoDetector():
-    def __init__(self, aruco_dict = cv2.aruco.DICT_4X4_50):
+    """
+    @brief Class that represents the ArUco detector node.
+    """
+
+    def __init__(self, aruco_dict=cv2.aruco.DICT_4X4_50):
+        """
+        @brief Constructor of the ArucoDetector class.
+        @param aruco_dict: ArUco dictionary used for marker detection.
+        """
         self.vid = cv2.VideoCapture(0)
         rospy.init_node("aruco_detector")
 
-
-
     def main(self):
+        """
+        @brief Main function that runs the ArUco detector node.
+        """
         while not rospy.is_shutdown():
             # Capture the video frame
             ret, frame = self.vid.read()
