@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 import math
 import rospy
 import numpy as np
@@ -10,25 +9,26 @@ from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64MultiArray
 
 
-
 class KalmanFilterForPuzzlebotPose():
     def __init__(self):
-        
+        """
+        @brief Inicializa el nodo de ROS y los suscriptores y publicadores necesarios.
+        """
         rospy.init_node("kalman_filter_for_puzzlebot_pose")
-        rospy.Subscriber("/kalman_prediction_odom", Odometry, self.odom_callback)                
-        rospy.Subscriber("/estimated_sensor_reading", Float64MultiArray, self.estimated_visual_sensor_reading_callback)        
+        rospy.Subscriber("/kalman_prediction_odom", Odometry, self.odom_callback)
+        rospy.Subscriber("/estimated_sensor_reading", Float64MultiArray, self.estimated_visual_sensor_reading_callback)
         rospy.Subscriber("/relation_matrix_between_sensor_and_state", Float64MultiArray, self.visual_sensor_reading_c_mat_callback)
         rospy.Subscriber("/real_sensor_reading", Float64MultiArray, self.real_sensor_Reading_callback)
 
-        self.kalman_corrected_odom_pub = rospy.Publisher("/kalman_corrected_odom",Odometry, queue_size=1)
+        self.kalman_corrected_odom_pub = rospy.Publisher("/kalman_corrected_odom", Odometry, queue_size=1)
         self.kalman_position_message = Odometry()
-        self.puzzlebot_6_times_6_covariance_matrix = np.zeros((6*6,), dtype=float)        
+        self.puzzlebot_6_times_6_covariance_matrix = np.zeros((6 * 6,), dtype=float)
 
         self.relation_matrix_between_output_and_state = None
-        self.state_uncertainty_matrix = np.identity(2) *0.2
+        self.state_uncertainty_matrix = np.identity(2) * 0.2
 
-        self.predicted_state = None        
-        self.predicted_state_covariance = None        
+        self.predicted_state = None
+        self.predicted_state_covariance = None
         self.visual_sensor_reading = None
 
         self.real_yk = None
@@ -39,28 +39,48 @@ class KalmanFilterForPuzzlebotPose():
         self.new_relation_matrix_between_state_and_sensor_recieved = False
 
         self.rate_val = 5.0
-        self.rate = rospy.Rate(self.rate_val)    
+        self.rate = rospy.Rate(self.rate_val)
 
     def odom_callback(self, data):
+        """
+        @brief Callback de la suscripción a "/kalman_prediction_odom".
+        @param data: Mensaje de Odometry recibido.
+        """
         self.odom_msg_to_state_vector(data)
-   
-    def estimated_visual_sensor_reading_callback(self, msg):                
+
+    def estimated_visual_sensor_reading_callback(self, msg):
+        """
+        @brief Callback de la suscripción a "/estimated_sensor_reading".
+        @param msg: Mensaje de Float64MultiArray recibido.
+        """
         reading_as_array = np.array(msg.data)
-        self.visual_sensor_reading = reading_as_array.reshape((2,1))
+        self.visual_sensor_reading = reading_as_array.reshape((2, 1))
         self.last_visual_sensor_msg_timestamp = rospy.get_time()
         self.new_sensor_reading_recieved = True
-    
+
     def real_sensor_Reading_callback(self, msg):
+        """
+        @brief Callback de la suscripción a "/real_sensor_reading".
+        @param msg: Mensaje de Float64MultiArray recibido.
+        """
         reading_as_array = np.array(msg.data)
-        self.real_yk = reading_as_array.reshape((2,1))
+        self.real_yk = reading_as_array.reshape((2, 1))
 
     def visual_sensor_reading_c_mat_callback(self, msg):
+        """
+        @brief Callback de la suscripción a "/relation_matrix_between_sensor_and_state".
+        @param msg: Mensaje de Float64MultiArray recibido.
+        """
         reading_as_array = np.array(msg.data)
-        self.relation_matrix_between_output_and_state = reading_as_array.reshape((2,3))
+        self.relation_matrix_between_output_and_state = reading_as_array.reshape((2, 3))
         self.last_visual_sensor_msg_timestamp = rospy.get_time()
-        self.new_relation_matrix_between_state_and_sensor_recieved = True        
+        self.new_relation_matrix_between_state_and_sensor_recieved = True
 
     def odom_msg_to_state_vector(self, msg):
+        """
+        @brief Convierte el mensaje de Odometry a un vector de estado.
+        @param msg: Mensaje de Odometry recibido.
+        """
         _, _, robot_yaw = nav_functions.euler_from_quaternion([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
         self.predicted_state = np.array(
             [[msg.pose.pose.position.x],
@@ -68,60 +88,74 @@ class KalmanFilterForPuzzlebotPose():
              [robot_yaw]]
         )
         self.predicted_state_covariance = np.array(
-            [[msg.pose.covariance[0], msg.pose.covariance[1], msg.pose.covariance[5] ],
+            [[msg.pose.covariance[0], msg.pose.covariance[1], msg.pose.covariance[5]],
              [msg.pose.covariance[6], msg.pose.covariance[7], msg.pose.covariance[11]],
              [msg.pose.covariance[30], msg.pose.covariance[31], msg.pose.covariance[35]]],
         )
 
-    def kalman(self,xk_pred,Pk_pred,C,R,yk):        
-        #Correction
-        Gk = Pk_pred@(C.T)@np.linalg.inv((C@Pk_pred@C.T)+R)        
-        xk_corrected = xk_pred+ Gk@(self.real_yk - yk) 
-        Pk_corrected = (np.identity(len(xk_pred), dtype=float)-(Gk@C))@Pk_pred        
-        return xk_corrected,Pk_corrected
-    
+    def kalman(self, xk_pred, Pk_pred, C, R, yk):
+        """
+        @brief Aplica el filtro de Kalman para corregir el estado predicho.
+        @param xk_pred: Estado predicho.
+        @param Pk_pred: Covarianza del estado predicho.
+        @param C: Matriz de relación entre la salida y el estado.
+        @param R: Covarianza del ruido de medición.
+        @param yk: Medida real del sensor.
+        @return Estado corregido, Covarianza corregida.
+        """
+        # Corrección
+        Gk = Pk_pred @ (C.T) @ np.linalg.inv((C @ Pk_pred @ C.T) + R)
+        xk_corrected = xk_pred + Gk @ (self.real_yk - yk)
+        Pk_corrected = (np.identity(len(xk_pred), dtype=float) - (Gk @ C)) @ Pk_pred
+        return xk_corrected, Pk_corrected
+
     def fill_odometry_header(self):
+        """
+        @brief Rellena la información de encabezado del mensaje de Odometry corregido.
+        """
         self.kalman_position_message.header.stamp = rospy.Time.now()
         self.kalman_position_message.header.frame_id = "map"
-        self.kalman_position_message.child_frame_id = "base_link"        
-    
-    def create_kalman_position_message(self,corrected_state_mean, corrected_state_cov):
-        
-        self.fill_odometry_header()
-        self.kalman_position_message.pose.pose.position.x = corrected_state_mean[0,0]
-        self.kalman_position_message.pose.pose.position.y = corrected_state_mean[1,0]
+        self.kalman_position_message.child_frame_id = "base_link"
 
-        self.puzzlebot_estimated_rot_quaternion = nav_functions.quaternion_from_euler(0.0, 0.0, corrected_state_mean[2,0])
+    def create_kalman_position_message(self, corrected_state_mean, corrected_state_cov):
+        """
+        @brief Crea el mensaje de Odometry corregido y lo publica.
+        @param corrected_state_mean: Media del estado corregido.
+        @param corrected_state_cov: Covarianza del estado corregido.
+        """
+        self.fill_odometry_header()
+        self.kalman_position_message.pose.pose.position.x = corrected_state_mean[0, 0]
+        self.kalman_position_message.pose.pose.position.y = corrected_state_mean[1, 0]
+
+        self.puzzlebot_estimated_rot_quaternion = nav_functions.quaternion_from_euler(0.0, 0.0, corrected_state_mean[2, 0])
         self.kalman_position_message.pose.pose.orientation.x = self.puzzlebot_estimated_rot_quaternion[0]
         self.kalman_position_message.pose.pose.orientation.y = self.puzzlebot_estimated_rot_quaternion[1]
         self.kalman_position_message.pose.pose.orientation.z = self.puzzlebot_estimated_rot_quaternion[2]
         self.kalman_position_message.pose.pose.orientation.w = self.puzzlebot_estimated_rot_quaternion[3]
-                
-        self.puzzlebot_6_times_6_covariance_matrix[0:2] = corrected_state_cov[0,0:2]
-        self.puzzlebot_6_times_6_covariance_matrix[5] = corrected_state_cov[0,2]
-        self.puzzlebot_6_times_6_covariance_matrix[6:8] = corrected_state_cov[1,0:2]
-        self.puzzlebot_6_times_6_covariance_matrix[11] = corrected_state_cov[1,2]
-        self.puzzlebot_6_times_6_covariance_matrix[30:32] = corrected_state_cov[2,0:2]
-        self.puzzlebot_6_times_6_covariance_matrix[35] = corrected_state_cov[2,2]
+
+        self.puzzlebot_6_times_6_covariance_matrix[0:2] = corrected_state_cov[0, 0:2]
+        self.puzzlebot_6_times_6_covariance_matrix[5] = corrected_state_cov[0, 2]
+        self.puzzlebot_6_times_6_covariance_matrix[6:8] = corrected_state_cov[1, 0:2]
+        self.puzzlebot_6_times_6_covariance_matrix[11] = corrected_state_cov[1, 2]
+        self.puzzlebot_6_times_6_covariance_matrix[30:32] = corrected_state_cov[2, 0:2]
+        self.puzzlebot_6_times_6_covariance_matrix[35] = corrected_state_cov[2, 2]
 
         self.kalman_position_message.pose.covariance = self.puzzlebot_6_times_6_covariance_matrix.tolist()
-        
-        self.kalman_corrected_odom_pub.publish(self.kalman_position_message)        
-                
-    def main(self):        
+
+        self.kalman_corrected_odom_pub.publish(self.kalman_position_message)
+
+    def main(self):
+        """
+        @brief Función principal que se ejecuta continuamente hasta que se cierre el nodo de ROS.
+        """
         while not rospy.is_shutdown():
             if self.predicted_state is not None and self.predicted_state_covariance is not None:
-                if self.last_visual_sensor_msg_timestamp == None and self.last_visual_sensor_processed_msg_timestamp == None:
-                    
+                if self.last_visual_sensor_msg_timestamp is None and self.last_visual_sensor_processed_msg_timestamp is None:
                     corrected_state_mean = self.predicted_state
                     corrected_state_cov = self.predicted_state_covariance
-                
-                elif (((self.last_visual_sensor_processed_msg_timestamp == None and self.last_visual_sensor_msg_timestamp != None) or 
-                (self.last_visual_sensor_processed_msg_timestamp < self.last_visual_sensor_msg_timestamp)) and
-                (self.new_sensor_reading_recieved and self.new_relation_matrix_between_state_and_sensor_recieved)):
-                    
-                    # TODO Check elif conditions
-                    
+                elif (((self.last_visual_sensor_processed_msg_timestamp is None and self.last_visual_sensor_msg_timestamp is not None) or
+                       (self.last_visual_sensor_processed_msg_timestamp < self.last_visual_sensor_msg_timestamp)) and
+                      (self.new_sensor_reading_recieved and self.new_relation_matrix_between_state_and_sensor_recieved)):
                     corrected_state_mean, corrected_state_cov = self.kalman(self.predicted_state,
                                                                             self.predicted_state_covariance,
                                                                             self.relation_matrix_between_output_and_state,
@@ -131,18 +165,15 @@ class KalmanFilterForPuzzlebotPose():
                     if np.any(np.isnan(corrected_state_mean)):
                         corrected_state_mean = self.predicted_state
                         corrected_state_cov = self.predicted_state_covariance
-                                    
                 else:
-                    
                     corrected_state_mean = self.predicted_state
-                    corrected_state_cov = self.predicted_state_covariance    
+                    corrected_state_cov = self.predicted_state_covariance
 
-  
-                self.create_kalman_position_message(corrected_state_mean, corrected_state_cov) 
-            
+                self.create_kalman_position_message(corrected_state_mean, corrected_state_cov)
             else:
-                print ("yk is none")               
-            self.rate.sleep()          
+                print("yk is none")
+            self.rate.sleep()
+
 
 if __name__ == "__main__":
     kalman_filer = KalmanFilterForPuzzlebotPose()
