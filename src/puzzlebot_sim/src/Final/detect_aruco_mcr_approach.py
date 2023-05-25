@@ -257,7 +257,7 @@ class ArucoDetector():
         """
         angle = -(camera_fov/image_width)*aruco_midpoint[0] + camera_fov/2
         return angle
-
+#### AQUI SE HACE PARA MEDIR DISTANCIAS HACIA LOS ARUCOS DESDE LE PUNTO DEL PUZZLEBOT *MELI*
     def publish_sensor_data(self, aruco_cordinates, aruco_midpoint):
         if self.current_position_xy_2d != None and self.current_angle != None:
             delta_x = aruco_cordinates[0] - self.current_position_xy_2d[0]

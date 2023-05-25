@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-
+"""
+    @class Bug0
+    @brief Bug0 class for robot navigation using the Bug 0 algorithm.
+"""
+    
 import math
 import rospy
 import nav_functions
@@ -7,11 +11,16 @@ import numpy as np
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
-
+        
 
 class Bug0():
     def __init__(self, targetx, targety, wall_distance):
-        
+        """
+        @brief Initializes the Bug0 class.
+        @param targetx: X-coordinate of the target position.
+        @param targety: Y-coordinate of the target position.
+        @param wall_distance: Distance to maintain from obstacles while following walls.
+        """    
         rospy.init_node("bug_0_controller")
         rospy.Subscriber("/kalman_corrected_odom", Odometry, self.odom_callback)                
         
@@ -60,9 +69,16 @@ class Bug0():
 
 
     def scan_callback(self, msg):
+        """
+        @brief Callback function for the laser scan topic.
+        @param msg: LaserScan message.
+        """
         self.scan = msg    
 
-    def reset_values(self):        
+    def reset_values(self):      
+        """
+        @brief Resets the values of the Bug0 instance.
+        """  
         self.vel_msg = Twist()        
         self.current_position_xy_2d = (None, None)
         self.target_postition_xy_2d = (None, None)
@@ -70,11 +86,19 @@ class Bug0():
         self.displaced_angle = 0.0
 
     def odom_callback(self, data):
+        """
+        @brief Callback function for the odometry topic.
+        @param data: Odometry message.
+        """
         self.current_position_xy_2d = ( data.pose.pose.position.x , data.pose.pose.position.y )                             
         self.current_angle = nav_functions.calculate_yaw_angle_deg( data.pose.pose.orientation )
 
     def turn_left(self, p2p_target_angle, angle_to_rotate = np.pi/2.0):
-        
+        """
+        @brief Turns the robot left by a specified angle.
+        @param p2p_target_angle: Angle between the robot's current position and the target position.
+        @param angle_to_rotate: Angle to rotate the robot left (default: np.pi / 2.0).
+        """
         if self.last_turn_time == None and self.state == "turn_left":
             self.last_turn_time = rospy.get_time()
         else:    
@@ -92,7 +116,12 @@ class Bug0():
                 self.displaced_angle = 0.0        
                 self.last_turn_time = None            
 
-    def go_to_point_controller(self, angle_error, distance_error):        
+    def go_to_point_controller(self, angle_error, distance_error):    
+        """
+        @brief Controls the robot's movement towards the target position.
+        @param angle_error: Angular error between the robot's orientation and the target orientation.
+        @param distance_error: Euclidean distance between the robot's position and the target position.
+        """    
         front_scan_val = self.get_mean_laser_value_at_fov(0.0, 30.0)        
         if distance_error <= self.distance_error_treshold:                                                            
             self.state = "arrived"
@@ -100,19 +129,34 @@ class Bug0():
                 self.state = "turn_left"
         elif abs(angle_error) > self.angular_error_treshold:                                    
             self.vel_msg.angular.z = nav_functions.saturate_signal(self.go2point_angular_kp*angle_error, self.w_max)
-            #f self.vel_msg.linear.x == 0 and self.vel_msg.angular.z < 0.02 and self.vel_msg.angular.z > 0:
-            #    self.vel_msg.angular.z = 0.02 
-            #if self.vel_msg.linear.x == 0 and self.vel_msg.angular.z > -0.02 and self.vel_msg.angular.z < 0:
-            #    self.vel_msg.angular.z = -0.02  
+            if self.vel_msg.linear.x == 0 and self.vel_msg.angular.z < 0.02 and self.vel_msg.angular.z > 0:
+                self.vel_msg.linear.x = 0.05 
+            if self.vel_msg.linear.x == 0 and self.vel_msg.angular.z > -0.02 and self.vel_msg.angular.z < 0:
+                self.vel_msg.linear.x = 0.05  
         elif distance_error > self.distance_error_treshold:              
             self.vel_msg.linear.x = nav_functions.saturate_signal(self.go2point_linear_kp*distance_error, self.v_max)
             self.vel_msg.linear.x = max(self.vel_msg.linear.x,0) #make sure its always smth    we dont want to be nan
     
     def get_laser_index_from_angle(self, angle_in_deg):        
+        """
+        @brief Gets the laser scan index corresponding to a given angle in degrees.
+        @param angle_in_deg: Angle in degrees.
+        @return Laser scan index.
+        """
         angle_index = round( (angle_in_deg*len(self.scan.ranges))/360.0 )
         return int(angle_index)
     
-    def get_mean_laser_value_at_fov(self, fov_center, fov_range):        
+    def get_mean_laser_value_at_fov(self, fov_center, fov_range): 
+        """
+        Returns the mean laser scan value within the specified field of view (FOV).
+
+        Parameters:
+            fov_center (float): Center angle of the FOV.
+            fov_range (float): Range of the FOV.
+
+        Returns:
+            float: Mean laser scan value within the FOV.
+        """       
         if fov_range > 180.0:
             Exception("fov is too large")
         
@@ -131,7 +175,17 @@ class Bug0():
         values_at_fov[values_at_fov == np.inf] = 12.0
         return values_at_fov.mean()/1.2 # since values do not appear to represent the real meters
     
-    def get_values_at_target(self, fov_center, fov_range):        
+    def get_values_at_target(self, fov_center, fov_range): 
+        """
+        Returns the laser scan values within the specified field of view (FOV) centered at the target point.
+
+        Parameters:
+            fov_center (float): Center angle of the FOV.
+            fov_range (float): Range of the FOV.
+
+        Returns:
+            list: Laser scan values within the FOV.
+        """       
         if fov_range > 180.0:
             Exception("fov is too large")
         
@@ -149,6 +203,15 @@ class Bug0():
         return values_at_fov
     
     def target_path_is_clear(self, p2p_target_angle):
+        """
+        Checks if the path towards the target point is clear.
+
+        Parameters:
+            p2p_target_angle (float): Angle to the target point.
+
+        Returns:
+            bool: True if the path is clear, False otherwise.
+        """
         wall_dist_fov = 2.0*( np.pi/2.0 - np.arctan(self.wall_distance/(self.puzzlebot_passing_diameter/2)) )        
         target_direction = nav_functions.angle_to_only_possitive_deg(p2p_target_angle - self.current_angle)        
         values_at_target = self.get_values_at_target(target_direction, wall_dist_fov)        
@@ -160,13 +223,24 @@ class Bug0():
         return target_is_clear        
     
     def obstacle_in_front(self):
+        """
+        Checks if there is an obstacle in front of the robot.
+
+        Returns:
+            bool: True if there is an obstacle, False otherwise.
+        """
         wall_dist_fov = 2.0*( np.pi/2.0 - np.arctan(self.wall_distance/(self.puzzlebot_passing_diameter/2)) )                
         values_in_front = self.get_values_at_target(0.0, wall_dist_fov)
         side_dists_to_obstacle = self.get_values_at_target(315.0, 30.0)
         return min(values_in_front) <= self.wall_distance or min(side_dists_to_obstacle) <= self.wall_distance/2.0
     
     def right_hand_rule_controller(self, p2p_target_angle):
-        
+        """
+        Controls the robot's behavior using the right-hand rule.
+
+        Parameters:
+            p2p_target_angle (float): Angle to the target point.
+        """
         if self.scan != None:                       
             if self.target_path_is_clear(p2p_target_angle) and (rospy.get_time() - self.follow_wall_start_time) >= 1.0:
                 self.state = "go_to_point"
@@ -219,6 +293,25 @@ class Bug0():
                 self.vel_msg.linear.x = linear_x
                 
     def main(self):
+        """
+        Main function that initializes the node and runs the robot's behavior.
+
+        The function continuously checks the robot's state and performs corresponding actions, such as going to a point,
+        following a wall, turning left, or declaring arrival to the destination. It publishes velocity messages based on
+        the current angle and laser scan data.
+
+        Note:
+            This function assumes that the following member variables are initialized:
+            - self.state: The current state of the robot.
+            - self.vel_msg: The velocity message to be published.
+            - self.current_angle: The current angle of the robot.
+            - self.scan: The laser scan data.
+            - self.target_postition_xy_2d: The target position in the xy-plane.
+            - self.current_position_xy_2d: The current position in the xy-plane.
+
+        Returns:
+            None
+        """
         print("main inited node running")
         while not rospy.is_shutdown():
             if self.state == "go_to_point":
@@ -247,18 +340,23 @@ class Bug0():
                 elif self.state == "arrived":
                     print("You have arrived to your destination")
                     return
+                if math.isnan(self.vel_msg.linear.x):
+                    self.vel_msg.linear.x = 0.05
+                    
                 self.vel_pub.publish(self.vel_msg)
                 
             self.rate.sleep()          
 
 if __name__ == "__main__":
-    bug_0 = Bug0(1,6.0,0.5)
+    bug_0 = Bug0(1.0,6.0,0.5)
     bug_0.main()
-    bug_0 = Bug0(3,0.0,0.5)
+    bug_0 = Bug0(3.0,0.0,0.5)
     bug_0.main()
     bug_0 = Bug0(5.0,0.0,0.5)
     bug_0.main()
-    bug_0 = Bug0(2.0,-4.0,0.5)
+    bug_0 = Bug0(9.0,6.0,0.5)
+    bug_0.main()
+    bug_0 = Bug0(5.0,0.0,0.5)
     bug_0.main()
     bug_0 = Bug0(0.0,0.0,0.5)
     bug_0.main()
@@ -267,12 +365,3 @@ if __name__ == "__main__":
     bug_0.vel_pub.publish(bug_0.vel_msg)
     
     
-#___________Escenario llendo a arucos
-#    bug_0 = Bug0(1,6.0,0.5)
-#    bug_0.main()
-#   bug_0 = Bug0(3,0.0,0.5)
-#   bug_0.main()
-#   bug_0 = Bug0(3.0,-8.0,0.5)
-#   bug_0.main()
-#   bug_0 = Bug0(0.0,0.0,0.5)
-#   bug_0.main()
