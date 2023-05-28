@@ -15,7 +15,7 @@
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find puzzlebot_world)/worlds/mcr_final_challenge.world"/>    
+    <arg name="world_name" value="$(find puzzlebot_world)/worlds/final_challenge.world"/>    
     <!-- <arg name="world_name" value="(find puzzlebot_world)/worlds/box.world" /> -->
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
@@ -53,15 +53,15 @@
 
   <include file="$(find puzzlebot_control)/launch/puzzlebot_control.launch"/>
 
-  <node name="odometry" pkg="puzzlebot_sim" type="wheelBasedDeadReckoning.py"/>
+  <node name="odometry" pkg="puzzlebot_sim" type="odom.py"/>
 
-  <node name="detect_aruco" pkg="puzzlebot_sim" type="detect_aruco_mcr_approach.py" output="screen"/>  
+  <node name="detect_aruco" pkg="puzzlebot_sim" type="arucoDetector.py" output="screen"/>  
   
-  <node name="kalman_filter" pkg="puzzlebot_sim" type="McrApproachKalmanFilterForPuzzlebot.py" output="screen"/>
+  <node name="kalman_filter" pkg="puzzlebot_sim" type="kalmanFilter.py" output="screen"/>
 
-  <node name="kalman_odometry" pkg="puzzlebot_sim" type="KalmanPredictionStage.py" output="screen"/>
+  <node name="kalman_odometry" pkg="puzzlebot_sim" type="kalmanodom.py" output="screen"/>
 
-  <node name="bug_0_controller" pkg="puzzlebot_sim" type="bug_0_controller_final.py" output="screen"/>
+  <node name="bug_0_controller" pkg="puzzlebot_sim" type="bug0.py" output="screen"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find puzzlebot_sim)/puzzlebot_rviz/robot_sim.rviz"/>  
 
