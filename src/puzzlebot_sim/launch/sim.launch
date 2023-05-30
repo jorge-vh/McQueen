@@ -5,7 +5,9 @@
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find puzzlebot_gazebo)/urdf/puzzlebot.xacro'" />
 
     <!--<node name="puzzlebot_sim" pkg="puzzlebot_sim" type="kinematic_model.py"/>-->
-    <node name="localisation" pkg="puzzlebot_sim" type="odometry.py"/>
+    <node name="localisation" pkg="puzzlebot_sim" type="WO.py"/>
+    <node name="Cordinate transform" pkg="puzzlebot_sim" type="CT.py"/>
+    <node name="BUG" pkg="puzzlebot_sim" type="B0.py"/>
     <!--<node name="localisation pkg="puzzlebot_sim" type="odometry.py"/>-->
     
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen"/>

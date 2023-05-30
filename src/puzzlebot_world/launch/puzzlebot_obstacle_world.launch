@@ -35,11 +35,9 @@
   <node name="puzzlebot_spawn" pkg="gazebo_ros" type="spawn_model"  output="screen"
           args="-urdf -param robot_description -model puzzlebot -x $(arg x) -y $(arg y) -z $(arg z) -Y $(arg Y)" />
 
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
-  </node>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen"> </node>
 
-  <node name="joint_state_publisher"  pkg="joint_state_publisher" type="joint_state_publisher"> 
-  </node>
+  <node name="joint_state_publisher"  pkg="joint_state_publisher" type="joint_state_publisher"> </node>
 
   <node name="puzzlebot_controller" pkg="puzzlebot_control" type="puzzlebot_control_node"/>
 

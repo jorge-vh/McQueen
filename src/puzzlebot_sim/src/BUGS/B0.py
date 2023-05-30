@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 #Last Modify: Fernando Cuellar 
 import math
@@ -33,17 +33,17 @@ class Bug0():
         self.angular_error_treshold = 0.3    
         self.distance_error_treshold = 0.08                    
 
-        self.go2point_angular_kp = 0.08
-        self.go2point_linear_kp = 0.3
+        self.go2point_angular_kp = 0.05
+        self.go2point_linear_kp = 0.1
 
         self.wall_kp_follow = 40.0
         self.wall_kp_avoid = 0.3
 
-        self.v_max = 0.4
-        self.v_max_wall = 0.4
-        self.w_max = 0.6
+        self.v_max = 0.05
+        self.v_max_wall = 0.05
+        self.w_max = 0.05
 
-        self.puzzlebot_passing_diameter = 0.60 # meters
+        self.puzzlebot_passing_diameter = 0.20 # meters
         # ____________________________________________________________________________ 
 
         self.state = "go_to_point"
@@ -75,12 +75,12 @@ class Bug0():
         self.current_angle = nav_functions.calculate_yaw_angle_deg( data.pose.pose.orientation )
 
         # ______________ function to  turn left in case of state_____________________
-    def turn_left(self, p2p_target_angle, angle_to_rotate = np.pi/2.0):
+    def turn_left(self, p2p_target_angle, angle_to_rotate = np.pi/3.0):
         #turn left until angle to rotate has been complete 
         if self.last_turn_time == None and self.state == "turn_left":
             self.last_turn_time = rospy.get_time()
         else:    
-            if self.displaced_angle < angle_to_rotate: #angle_to_rotate = np.pi/2.0                
+            if self.displaced_angle < angle_to_rotate: #angle_to_rotate = np.pi/3.0                
                 linear_x = 0.0
                 angular_z = self.w_max            
                 self.vel_msg.linear.x = linear_x
@@ -99,6 +99,7 @@ class Bug0():
         if distance_error <= self.distance_error_treshold: #get close to error distance                                                            
             self.state = "arrived" #one of the states 
         elif self.obstacle_in_front(): #is there is an obstacle go to state turn left 
+                print("Obstacle in front")
                 self.state = "turn_left"
         elif abs(angle_error) > self.angular_error_treshold: #redirect the angle bi the kp and the angle error                                    
             self.vel_msg.angular.z = nav_functions.saturate_signal(self.go2point_angular_kp*angle_error, self.w_max) 
@@ -211,7 +212,7 @@ class Bug0():
         print("main inited node running")
         while not rospy.is_shutdown():
             print(self.state)         
-            self.vel_msg.linear.x = 0.0
+            #self.vel_msg.linear.x = 0.0
             self.vel_msg.angular.z = 0.0
             #wait to start 
             if self.current_angle != None and self.scan != None:
@@ -235,9 +236,10 @@ class Bug0():
                     print("You have arrived to the destination")
                     exit             
                 self.vel_pub.publish(self.vel_msg)
+
                 
             self.rate.sleep()          
 
 if __name__ == "__main__":
-    bug_0 = Bug0(-2.5,3.0,0.5) # target coordinates  
+    bug_0 = Bug0(2,0,0.3) # target coordinates  
     bug_0.main()

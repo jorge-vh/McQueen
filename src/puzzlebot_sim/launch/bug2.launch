@@ -1,0 +1,10 @@
+<launch>
+  <!-- Launch bug2.py -->
+  <node name="bug2" pkg="puzzlebot_sim" type="bug2_test.py" output="screen"/>
+
+  <!-- Launch o.py -->
+  <node name="odometry" pkg="puzzlebot_sim" type="o_test.py" output="screen"/>
+
+  <!-- Launch pmodel.py -->
+  <node name="puzzlebot_sim" pkg="puzzlebot_sim" type="pmodel_test.py" output="screen"/>
+</launch>

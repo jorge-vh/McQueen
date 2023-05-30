@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import math
 import numpy as np
-from scipy.spatial.transform import Rotation
+from tf import transformations
 
 def calculate_yaw_angle(orientation_q):
     orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
@@ -42,8 +42,7 @@ def euclidean_distance_single_point_2d(p1):
 
 def euler_from_quaternion(orientation_list):
     x, y, z, w = orientation_list
-    r = Rotation.from_quat([x, y, z, w])
-    roll, pitch, yaw = r.as_euler('xyz')
+    (roll, pitch, yaw) = transformations.euler_from_quaternion(orientation_list)
     return roll, pitch, yaw
 
 def saturate_signal(signal, saturation_value):

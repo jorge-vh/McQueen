@@ -1,10 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import rospy
 import numpy as np
-from geometry_msgs.msg import Twist, Pose2D
+from geometry_msgs.msg import Twist, Pose2D, TransformStamped
 from std_msgs.msg import Float32
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_from_euler
+from tf2_msgs.msg import TFMessage
+
 
 class WheelOdometry():
     
@@ -14,7 +16,11 @@ class WheelOdometry():
         rospy.init_node('wheel_odometry')        
         self.wr_sub = rospy.Subscriber('/wr', Float32, self.puzzlebot_wr_callback)
         self.wl_sub = rospy.Subscriber('/wl', Float32, self.puzzlebot_wl_callback)        
-        self.puzzlebot_odom_pub = rospy.Publisher('/odom', Odometry, queue_size=1)        
+        self.puzzlebot_odom_pub = rospy.Publisher('/odom', Odometry, queue_size=1)
+        self.puzzlebot_tfPub = rospy.Publisher('/tfPB',TFMessage,queue_size=1)
+        self.puzzlebot_tf = TFMessage()
+        self.transformPbLidar = TransformStamped()
+        self.lidarOrient = quaternion_from_euler(0, 0, 1)
         
         # ______________ fill in publisher messages ______________
         self.initial_x, self.initial_y, self.initial_theta = (initial_x, initial_y, initial_theta)        
@@ -37,7 +43,7 @@ class WheelOdometry():
         self.w = 0.0
 
         # ______________ init rate ______________
-        self.rate = rospy.Rate(20.0)            
+        self.rate = rospy.Rate(10.0)            
 
 
     def puzzlebot_wr_callback(self, msg):
@@ -78,10 +84,21 @@ class WheelOdometry():
                     self.puzzlebot_estimated_pose.pose.pose.orientation.y = self.puzzlebot_estimated_rot_quaternion[1]
                     self.puzzlebot_estimated_pose.pose.pose.orientation.z = self.puzzlebot_estimated_rot_quaternion[2]
                     self.puzzlebot_estimated_pose.pose.pose.orientation.w = self.puzzlebot_estimated_rot_quaternion[3]
+
+                    self.transformPbLidar.header.stamp = rospy.Time.now()
+                    self.transformPbLidar.header.frame_id = 'base_link'
+                    self.transformPbLidar.child_frame_id = 'laser'
+                    self.transformPbLidar.transform.translation.z = 0.2
+                    self.transformPbLidar.transform.rotation.x = self.lidarOrient[0]
+                    self.transformPbLidar.transform.rotation.y = self.lidarOrient[1]
+                    self.transformPbLidar.transform.rotation.z = self.lidarOrient[2]
+                    self.transformPbLidar.transform.rotation.w = self.lidarOrient[3]
+                    self.puzzlebot_tf = [self.transformPbLidar]
                     # _________ end of filling puzzlebot pose data ______________
 
                     self.last_sampling_time = current_time                    
             self.puzzlebot_odom_pub.publish(self.puzzlebot_estimated_pose)
+            self.puzzlebot_tfPub.publish(self.puzzlebot_tf)
             self.rate.sleep()
 
 if __name__ == '__main__':

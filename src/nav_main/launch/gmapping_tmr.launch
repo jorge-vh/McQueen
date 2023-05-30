@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- Start Odom along with it's static transform -->
+  <node pkg="nav_main" type="odom.py" name="odom_node" output="screen" />
+  <node pkg="tf" type="static_transform_publisher" name="odom" args="0 0 0 0 0 0 odom base_link 100" />
+  <!-- Run Lidar -->
+  <include file="$(find nav_main)/launch/lidar.launch"/>
+  
+  <!--load robot description For TF's-->
+   <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find puzzlebot_gazebo)/urdf/puzzlebot.xacro'" />
+    
+    <arg name="x" default="0.00"/>
+    <arg name="y" default="0.00"/>
+    <arg name="z" default="0.000"/>
+    <arg name="Y" default="-1.57"/>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+  </node>
+
+  <node name="joint_state_publisher"  pkg="joint_state_publisher" type="joint_state_publisher"> 
+  </node>
+
+  <!-- Gmapping Files -->
+  <node pkg="tf" type="static_transform_publisher" name="map" args="0 0 0 0 0 0 map odom 100" />
+  <include file="$(find nav_main)/launch/include/odom/gmapping_base.launch"/>
+  <include file="$(find nav_main)/launch/include/odom/teb_move_base.launch"/>
+  <node name="robot_pose_publisher" pkg="robot_pose_publisher" type="robot_pose_publisher" />
+  <!-- <node pkg="laser_filters" type="scan_to_scan_filter_chain" output="screen" name="laser_filter">
+      <rosparam command="load" file="$(find nav_main)/filters/box_filter.yaml" />
+  </node> -->
+  <node name="get_scan_data" pkg="nav_main" type="get_scan_data.py" respawn="true" /> 
+</launch>
