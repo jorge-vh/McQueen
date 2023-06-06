@@ -55,7 +55,7 @@ osThreadId_t rosSerialCommHandle;
 const osThreadAttr_t rosSerialComm_attributes = {
   .name = "rosSerialComm",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for gripperTask */
 osThreadId_t gripperTaskHandle;
@@ -76,7 +76,7 @@ osThreadId_t receiveJetsonHandle;
 const osThreadAttr_t receiveJetson_attributes = {
   .name = "receiveJetson",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for emStop */
 osThreadId_t emStopHandle;
@@ -109,12 +109,13 @@ int okFlags[4];
 
 ros::NodeHandle nh;
 
-void str_act_msg(const std_msgs::String& msg);
+void req(const std_msgs::String& msg);
 
 std_msgs::String str_msg;
-ros::Publisher chatter("chatter", &str_msg																						);
-ros::Subscriber<std_msgs::String> stm32_comms("gripper_action", &str_act_msg);
-std::string hello = "STM32 to Jetson!";
+ros::Publisher chatter("chatter", &str_msg);
+ros::Subscriber<std_msgs::String> stm32_comms("gripper_action", &req);
+std::string request="";
+std::string gripState="";
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
   nh.getHardware()->flush();
@@ -139,7 +140,7 @@ void StartEmStop(void *argument);
 void StartCheckButton(void *argument);
 void StartTransmitJetson(void *argument);
 void setup(void);
-void loop(void);
+void jetsonResponse(void);
 /* USER CODE BEGIN PFP */
 
 void setup(void)
@@ -149,18 +150,19 @@ void setup(void)
   nh.subscribe(stm32_comms);
 }
 
-void loop(void)
-{
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  const char* str = hello.c_str();
-  str_msg.data = str;
-  chatter.publish(&str_msg);
-  nh.spinOnce();
 
-  HAL_Delay(1000);
+void jetsonResponse(void)
+{
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	const char* str = gripState.c_str();
+	str_msg.data = str;
+	chatter.publish(&str_msg);
+	nh.spinOnce();
+	HAL_Delay(100);
 }
-void str_act_msg(const std_msgs::String& msg){
-	hello = msg.data;
+
+void req(const std_msgs::String& msg){
+	request = msg.data;
 }
 /* USER CODE END PFP */
 
@@ -483,8 +485,8 @@ void StartRosSerialComm(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	  loop();
-    osDelay(1000);
+	jetsonResponse();
+    osDelay(100);
   }
   /* USER CODE END 5 */
 }
@@ -508,6 +510,7 @@ void StartGripperTask(void *argument)
 		  osDelay(50);
 		  gripperFlag = 0;
   		  gripperOK = 1;
+  		  gripState = "gripOpen";
 	  }
 	  else if (gripperFlag == 2)
 	  {
@@ -515,6 +518,7 @@ void StartGripperTask(void *argument)
 		  osDelay(2000);
 		  gripperFlag = 0;
   		  gripperOK = 1;
+  		  gripState = "gripClose";
 	  }
     osDelay(100);
   }
@@ -540,6 +544,7 @@ void StartArtTask(void *argument)
 	  		  osDelay(50);
 	  		  artFlag = 0;
 	  		  artOK = 1;
+	  		  gripState = "artUp";
 	  	  }
 	 else if (artFlag == 2)
 	  	  {
@@ -547,6 +552,7 @@ void StartArtTask(void *argument)
 	  		  osDelay(50);
 	  		  artFlag = 0;
 	  		  artOK = 1;
+	  		  gripState = "artDown";
 	  	  }
 	 osDelay(100);
   }
@@ -566,14 +572,13 @@ void StartReceiveJetson(void *argument)
   /* Infinite loop */
   for(;;)
   {
-		 read();
-		 switch (comm[0]){
-		 	 case 1:
-		 		 if (comm[1]==1)
+		 switch (request[0]){
+		 	 case 'g':
+		 		 if (request[1] == 'o')
 					{
 						gripperFlag = 1;
 					}
-				 else if (comm[1]==2)
+				 else if (request[1] == 'c')
 					{
 						gripperFlag = 2;
 					}
@@ -582,12 +587,12 @@ void StartReceiveJetson(void *argument)
 						gripperFlag = 0;
 					}
 				 break;
-			 case 2:
-				 if (comm[1]==1)
+			 case 'a':
+				 if (request[1] == 'u')
 					{
 						artFlag = 1;
 					}
-				 else if (comm[1]==2)
+				 else if (request[1] == 'd')
 					{
 						artFlag = 2;
 					}
@@ -596,7 +601,7 @@ void StartReceiveJetson(void *argument)
 						artFlag = 0;
 					}
 				 break;
-			 case 3:
+			 case 's':
 					stopFlag = 1;
 					break;
 			default:
@@ -627,6 +632,7 @@ void StartEmStop(void *argument)
 		  gripperFlag = 0;
 		  artFlag = 0;
 		  stopFlag = 0;
+		  gripState = "stop";
 	  }
     osDelay(1);
   }
