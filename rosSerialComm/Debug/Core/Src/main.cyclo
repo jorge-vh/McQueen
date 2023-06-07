@@ -41,23 +41,22 @@ main.cpp:120:6:void HAL_UART_TxCpltCallback(UART_HandleTypeDef*)	1
 main.cpp:124:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	1
 main.cpp:146:6:void setup()	1
 main.cpp:154:6:void jetsonResponse()	1
-main.cpp:164:6:void req(const std_msgs::String&)	1
-main.cpp:178:5:int main()	1
-main.cpp:279:6:void SystemClock_Config()	3
-main.cpp:321:13:void MX_TIM2_Init()	7
-main.cpp:384:13:void MX_USART1_UART_Init()	2
-main.cpp:415:13:void MX_DMA_Init()	1
-main.cpp:436:13:void MX_GPIO_Init()	1
-main.cpp:469:6:void read()	1
-main.cpp:482:6:void StartRosSerialComm(void*)	1
-main.cpp:501:6:void StartGripperTask(void*)	3
-main.cpp:535:6:void StartArtTask(void*)	3
-main.cpp:569:6:void StartReceiveJetson(void*)	9
-main.cpp:625:6:void StartEmStop(void*)	2
-main.cpp:649:6:void StartCheckButton(void*)	2
-main.cpp:673:6:void StartTransmitJetson(void*)	5
-main.cpp:727:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	2
-main.cpp:744:6:void Error_Handler()	1
+main.cpp:163:6:void req(const std_msgs::String&)	1
+main.cpp:177:5:int main()	1
+main.cpp:278:6:void SystemClock_Config()	3
+main.cpp:320:13:void MX_TIM2_Init()	7
+main.cpp:383:13:void MX_USART1_UART_Init()	2
+main.cpp:414:13:void MX_DMA_Init()	1
+main.cpp:435:13:void MX_GPIO_Init()	1
+main.cpp:477:6:void StartRosSerialComm(void*)	1
+main.cpp:495:6:void StartGripperTask(void*)	3
+main.cpp:530:6:void StartArtTask(void*)	3
+main.cpp:565:6:void StartReceiveJetson(void*)	9
+main.cpp:621:6:void StartEmStop(void*)	2
+main.cpp:646:6:void StartCheckButton(void*)	2
+main.cpp:671:6:void StartTransmitJetson(void*)	5
+main.cpp:725:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	2
+main.cpp:742:6:void Error_Handler()	1
 msg.h:129:15:static void ros::Msg::varToArr(A, V) [with A = unsigned char*; V = long unsigned int]	2
 msg.h:137:15:static void ros::Msg::arrToVar(V&, A) [with V = long unsigned int; A = unsigned char*]	2
 node_handle.h:50:7:constexpr ros::NodeHandleBase_::NodeHandleBase_()	1
@@ -76,11 +75,11 @@ node_handle.h:494:15:int ros::NodeHandle_<Hardware, MAX_SUBSCRIBERS, MAX_PUBLISH
 node_handle.h:402:8:void ros::NodeHandle_<Hardware, MAX_SUBSCRIBERS, MAX_PUBLISHERS, INPUT_SIZE, OUTPUT_SIZE>::setNow(ros::Time&) [with Hardware = STM32Hardware; int MAX_SUBSCRIBERS = 25; int MAX_PUBLISHERS = 25; int INPUT_SIZE = 512; int OUTPUT_SIZE = 512]	1
 node_handle.h:556:8:void ros::NodeHandle_<Hardware, MAX_SUBSCRIBERS, MAX_PUBLISHERS, INPUT_SIZE, OUTPUT_SIZE>::logerror(const char*) [with Hardware = STM32Hardware; int MAX_SUBSCRIBERS = 25; int MAX_PUBLISHERS = 25; int INPUT_SIZE = 512; int OUTPUT_SIZE = 512]	1
 node_handle.h:535:8:void ros::NodeHandle_<Hardware, MAX_SUBSCRIBERS, MAX_PUBLISHERS, INPUT_SIZE, OUTPUT_SIZE>::log(char, const char*) [with Hardware = STM32Hardware; int MAX_SUBSCRIBERS = 25; int MAX_PUBLISHERS = 25; int INPUT_SIZE = 512; int OUTPUT_SIZE = 512]	1
-main.cpp:753:1:void __static_initialization_and_destruction_0(int, int)	5
+main.cpp:751:1:void __static_initialization_and_destruction_0(int, int)	5
 subscriber.h:114:16:void ros::Subscriber<MsgT, void>::callback(unsigned char*) [with MsgT = std_msgs::String]	1
 subscriber.h:128:15:int ros::Subscriber<MsgT, void>::getEndpointType() [with MsgT = std_msgs::String]	1
 subscriber.h:120:24:const char* ros::Subscriber<MsgT, void>::getMsgType() [with MsgT = std_msgs::String]	1
 subscriber.h:124:24:const char* ros::Subscriber<MsgT, void>::getMsgMD5() [with MsgT = std_msgs::String]	1
 node_handle.h:363:16:bool ros::NodeHandle_<Hardware, MAX_SUBSCRIBERS, MAX_PUBLISHERS, INPUT_SIZE, OUTPUT_SIZE>::connected() [with Hardware = STM32Hardware; int MAX_SUBSCRIBERS = 25; int MAX_PUBLISHERS = 25; int INPUT_SIZE = 512; int OUTPUT_SIZE = 512]	1
-main.cpp:753:1:cpp)	1
-main.cpp:753:1:cpp)	1
+main.cpp:751:1:cpp)	1
+main.cpp:751:1:cpp)	1

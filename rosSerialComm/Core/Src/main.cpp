@@ -158,7 +158,6 @@ void jetsonResponse(void)
 	str_msg.data = str;
 	chatter.publish(&str_msg);
 	nh.spinOnce();
-	HAL_Delay(100);
 }
 
 void req(const std_msgs::String& msg){
@@ -466,10 +465,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void read() {
-    comm[0] = 1;
-    comm[1] = 2;
-}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartRosSerialComm */
@@ -485,8 +480,7 @@ void StartRosSerialComm(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	jetsonResponse();
-    osDelay(100);
+    osDelay(1);
   }
   /* USER CODE END 5 */
 }
@@ -520,6 +514,7 @@ void StartGripperTask(void *argument)
   		  gripperOK = 1;
   		  gripState = "gripClose";
 	  }
+	  jetsonResponse();
     osDelay(100);
   }
   /* USER CODE END StartGripperTask */
@@ -554,6 +549,7 @@ void StartArtTask(void *argument)
 	  		  artOK = 1;
 	  		  gripState = "artDown";
 	  	  }
+	  jetsonResponse();
 	 osDelay(100);
   }
   /* USER CODE END StartArtTask */
@@ -610,7 +606,7 @@ void StartReceiveJetson(void *argument)
 					stopFlag = 0;
 		            break;
 			  }
-		    osDelay(20000);
+		    osDelay(200);
   }
   /* USER CODE END StartReceiveJetson */
 }
@@ -634,6 +630,7 @@ void StartEmStop(void *argument)
 		  stopFlag = 0;
 		  gripState = "stop";
 	  }
+	  jetsonResponse();
     osDelay(1);
   }
   /* USER CODE END StartEmStop */
@@ -658,7 +655,8 @@ void StartCheckButton(void *argument)
 	  else{
 	 		  objectHeld = 1;
 	 	  }
-	  osDelay(1);
+	  jetsonResponse();
+	  osDelay(100);
   }
   /* USER CODE END StartCheckButton */
 }
